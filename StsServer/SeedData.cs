@@ -24,12 +24,12 @@ namespace StsServer
                 context.Database.Migrate();
 
                 var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-                var alice = userMgr.FindByNameAsync("alice").Result;
+                var alice = userMgr.FindByNameAsync("alice@alice.ch").Result;
                 if (alice == null)
                 {
                     alice = new ApplicationUser
                     {
-                        UserName = "alice"
+                        UserName = "alice@alice.ch"
                     };
                     var result = userMgr.CreateAsync(alice, "Pass123$").Result;
                     if (!result.Succeeded)
@@ -57,12 +57,12 @@ namespace StsServer
                     Console.WriteLine("alice already exists");
                 }
 
-                var bob = userMgr.FindByNameAsync("bob").Result;
+                var bob = userMgr.FindByNameAsync("bob@bob.ch").Result;
                 if (bob == null)
                 {
                     bob = new ApplicationUser
                     {
-                        UserName = "bob"
+                        UserName = "bob@bob.ch"
                     };
                     var result = userMgr.CreateAsync(bob, "Pass123$").Result;
                     if (!result.Succeeded)
