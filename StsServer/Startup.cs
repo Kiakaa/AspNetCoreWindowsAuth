@@ -1,8 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-
-using StsServer.Data;
+﻿using StsServer.Data;
 using StsServer.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,11 +7,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Microsoft.Extensions.Logging;
+using StsServer.Services;
+using IdentityServer4.Services;
+using System.Security.Cryptography.X509Certificates;
+using System.IO;
+using Serilog;
+
 
 namespace StsServer
 {
     public class Startup
     {
+        private string _clientId = "xxxxxx";
+        private string _clientSecret = "xxxxx";
+
         public IConfiguration Configuration { get; }
         public IHostingEnvironment Environment { get; }
 
@@ -27,6 +33,11 @@ namespace StsServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            _clientId = Configuration["MicrosoftClientId"];
+            _clientSecret = Configuration["MircosoftClientSecret"];
+
+            var cert = new X509Certificate2(Path.Combine(Environment.ContentRootPath, "damienbodserver.pfx"), "");
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -34,7 +45,17 @@ namespace StsServer
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddAuthentication()
+                 .AddMicrosoftAccount(options =>
+                 {
+                     options.ClientId = _clientId;
+                     options.SignInScheme = "Identity.External";
+                     options.ClientSecret = _clientSecret;
+                 });
+
             services.AddMvc();
+
+            services.AddTransient<IEmailSender, AuthMessageSender>();
 
             services.Configure<IISOptions>(iis =>
             {
