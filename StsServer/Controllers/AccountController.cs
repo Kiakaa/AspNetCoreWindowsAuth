@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace StsServer.Controllers
 {
+    [SecurityHeaders]
     [Authorize]
     [Route("[controller]/[action]")]
     public class AccountController : Controller
@@ -351,7 +352,6 @@ namespace StsServer.Controllers
         /// </summary>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExternalLogin(string provider, string returnUrl)
         {
             if (AccountOptions.WindowsAuthenticationSchemeName == provider)
@@ -364,7 +364,7 @@ namespace StsServer.Controllers
                 // start challenge and roundtrip the return URL and 
                 var props = new AuthenticationProperties()
                 {
-                    RedirectUri = Url.Action("ExternalLoginCallback"),
+                    RedirectUri = Url.Action("ExternalLogin"),
                     Items =
                     {
                         { "returnUrl", returnUrl },
@@ -379,6 +379,7 @@ namespace StsServer.Controllers
         /// Post processing of external authentication
         /// </summary>
         [HttpGet]
+        [Route("ExternalLogin")]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback()
         {
@@ -636,7 +637,7 @@ namespace StsServer.Controllers
                 // auth the same as any other external authentication mechanism
                 var props = new AuthenticationProperties()
                 {
-                    RedirectUri = Url.Action("ExternalLoginCallback"),
+                    RedirectUri = "/Home/Index",
                     Items =
                     {
                         { "returnUrl", returnUrl },
